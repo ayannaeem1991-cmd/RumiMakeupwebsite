@@ -33,12 +33,9 @@ export const Hero: React.FC<HeroProps> = ({ onShopNow }) => {
           <div className="flex gap-4">
             <button 
               onClick={onShopNow}
-              className="px-8 py-4 bg-stone-900 text-white rounded-full font-medium hover:bg-rumi-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              className="px-10 py-5 text-lg bg-stone-900 text-white rounded-full font-semibold hover:bg-rumi-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
               Shop Collection
-            </button>
-            <button className="px-8 py-4 bg-white text-stone-900 border border-stone-200 rounded-full font-medium hover:bg-stone-50 transition-all duration-300">
-              View Lookbook
             </button>
           </div>
         </div>
