@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ViewState } from '../types';
 
 interface NavbarProps {
@@ -18,10 +18,23 @@ export const Navbar: React.FC<NavbarProps> = ({
   searchQuery = '',
   setSearchQuery 
 }) => {
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isSearchOpen && inputRef.current) {
+      // Small timeout ensures the element is visible/transitioning before focus is attempted,
+      // which improves keyboard reliability on mobile devices.
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [isSearchOpen]);
+
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-stone-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-28">
+        <div className="flex justify-between items-center h-28 relative">
           
           {/* Logo Section */}
           <div 
@@ -61,22 +74,50 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Icons & Search */}
           <div className="flex items-center space-x-4">
             
-            {/* Search Bar */}
-            <div className="relative group hidden sm:block">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
-                placeholder="Search..."
-                className="pl-9 pr-4 py-2 bg-stone-100 rounded-full border border-transparent focus:bg-white focus:border-rumi-300 focus:outline-none focus:ring-1 focus:ring-rumi-300 text-sm transition-all w-32 focus:w-48 placeholder-stone-400 text-stone-800"
-              />
-              <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-400 pointer-events-none"></i>
+            {/* Expandable Search Bar */}
+            <div className={`
+                transition-all duration-300 ease-in-out flex items-center
+                ${isSearchOpen 
+                    ? 'absolute inset-0 bg-white z-50 px-4 md:static md:w-64 md:bg-transparent md:px-0 md:z-auto md:justify-end' 
+                    : 'relative w-8 justify-end'
+                }
+            `}>
+               <input 
+                  ref={inputRef}
+                  type="text" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
+                  placeholder="Search..."
+                  className={`
+                      bg-stone-100 rounded-full border border-transparent focus:bg-white focus:border-rumi-300 focus:outline-none focus:ring-1 focus:ring-rumi-300 text-sm text-stone-800 placeholder-stone-400 transition-all duration-300 shadow-sm
+                      ${isSearchOpen 
+                        ? 'w-full py-2 pl-4 pr-10 opacity-100 pointer-events-auto' 
+                        : 'w-0 p-0 opacity-0 pointer-events-none absolute right-0'
+                      }
+                  `}
+               />
+               <button 
+                 type="button"
+                 onMouseDown={(e) => e.preventDefault()} // Prevent blur on input when clicking button
+                 onClick={() => {
+                     if (isSearchOpen) {
+                         setIsSearchOpen(false);
+                         if (!searchQuery && setSearchQuery) setSearchQuery('');
+                     } else {
+                         setIsSearchOpen(true);
+                     }
+                 }}
+                 className={`
+                     z-10 w-8 h-8 flex items-center justify-center transition-colors
+                     ${isSearchOpen 
+                        ? 'absolute right-4 md:right-0 text-stone-400 hover:text-stone-600' 
+                        : 'relative text-stone-600 hover:text-rumi-600'
+                     }
+                 `}
+               >
+                  <i className={`fa-solid ${isSearchOpen ? 'fa-xmark' : 'fa-magnifying-glass'} text-lg`}></i>
+               </button>
             </div>
-            
-            {/* Mobile Search Icon (optional fallback if needed, but keeping search visible is better UX) */}
-            <button className="sm:hidden text-stone-600 hover:text-rumi-600 transition-colors" onClick={() => setView('SHOP')}>
-               <i className="fa-solid fa-magnifying-glass text-lg"></i>
-            </button>
 
             <button 
               className="text-stone-600 hover:text-rumi-600 transition-colors relative"
