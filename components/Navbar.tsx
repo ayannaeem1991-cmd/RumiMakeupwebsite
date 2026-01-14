@@ -6,9 +6,18 @@ interface NavbarProps {
   onCartClick: () => void;
   currentView: ViewState;
   setView: (view: ViewState) => void;
+  searchQuery?: string;
+  setSearchQuery?: (query: string) => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ cartCount, onCartClick, currentView, setView }) => {
+export const Navbar: React.FC<NavbarProps> = ({ 
+  cartCount, 
+  onCartClick, 
+  currentView, 
+  setView,
+  searchQuery = '',
+  setSearchQuery 
+}) => {
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-stone-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -49,11 +58,26 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onCartClick, currentV
             </button>
           </div>
 
-          {/* Icons */}
-          <div className="flex items-center space-x-6">
-            <button className="text-stone-600 hover:text-rumi-600 transition-colors">
-              <i className="fa-solid fa-magnifying-glass text-lg"></i>
+          {/* Icons & Search */}
+          <div className="flex items-center space-x-4">
+            
+            {/* Search Bar */}
+            <div className="relative group hidden sm:block">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
+                placeholder="Search..."
+                className="pl-9 pr-4 py-2 bg-stone-100 rounded-full border border-transparent focus:bg-white focus:border-rumi-300 focus:outline-none focus:ring-1 focus:ring-rumi-300 text-sm transition-all w-32 focus:w-48 placeholder-stone-400 text-stone-800"
+              />
+              <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-400 pointer-events-none"></i>
+            </div>
+            
+            {/* Mobile Search Icon (optional fallback if needed, but keeping search visible is better UX) */}
+            <button className="sm:hidden text-stone-600 hover:text-rumi-600 transition-colors" onClick={() => setView('SHOP')}>
+               <i className="fa-solid fa-magnifying-glass text-lg"></i>
             </button>
+
             <button 
               className="text-stone-600 hover:text-rumi-600 transition-colors relative"
               onClick={onCartClick}

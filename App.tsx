@@ -11,14 +11,31 @@ import { Product, CartItem, ViewState } from './types';
 import { INITIAL_PRODUCTS } from './constants';
 import { supabase } from './lib/supabaseClient';
 
+const ABOUT_CONTENT = {
+  story: {
+    title: "Our Story",
+    content: "Rumi Makeup was born from a singular vision: to treat the face as a canvas for the soul’s deepest expression. Inspired by the timeless harmony of artistry and nature, our founder sought to bridge the gap between high-fashion craftsmanship and the effortless beauty of everyday wear. We believe that true confidence is mindful, rooted in the quiet wonder of self-discovery rather than the noise of perfection. Every pigment and texture we create is an invitation to celebrate your unique light, designed for every skin tone and every walk of life. By prioritizing ethical sourcing and inclusive design, we ensure that our brand remains a testament to both human connection and the art of living beautifully."
+  },
+  ingredients: {
+    title: "Ingredients",
+    content: "Our formulations are a careful dance between high-performance color and the gentle touch of skin-friendly care. We believe in being clean where it matters, utilizing a blend of soothing botanical extracts and skin-nourishing oils to ensure every application feels as good as it looks. By marrying medical-grade pigments with moisture-rich ceramides, we create textures that melt into the skin, providing vibrant finishes that never compromise your natural barrier. Transparency is our foundation, which is why we conduct rigorous safety testing to ensure our products are suitable for even the most sensitive complexions. Whether you are seeking a sheer wash of radiance or a bold statement, our ingredients are chosen to honor and protect the diversity of your skin."
+  },
+  sustainability: {
+    title: "Sustainability",
+    content: "Sustainability at Rumi Makeup is a journey of continuous refinement and respect for the world that provides our inspiration. We favor responsible packaging, utilizing recycled and recyclable materials to ensure our footprint is as light as our loose powders. From reducing waste in our production cycles to maintaining a strict cruelty-free testing standard, we believe that beauty should never come at the cost of a living being. We embrace lifecycle thinking by focusing on long-wear formulas that encourage mindful consumption and exploring refill options that extend the life of our cherished components. By sourcing our raw materials through ethical partnerships, we aim to protect the delicate ecosystems that gift us our vibrant colors."
+  }
+};
+
 export default function App() {
   const [view, setView] = useState<ViewState>('HOME');
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeAboutSection, setActiveAboutSection] = useState<'story' | 'ingredients' | 'sustainability' | null>(null);
   
   // Track purchased items to simulate "Verified Purchaser" reviews
   const [purchasedItemIds, setPurchasedItemIds] = useState<string[]>([]);
@@ -201,6 +218,16 @@ export default function App() {
     setIsCartOpen(true);
   };
 
+  const updateCartQuantity = (id: string, delta: number) => {
+    setCart(prev => prev.map(item => {
+      if (item.id === id) {
+        const newQuantity = Math.max(1, item.quantity + delta);
+        return { ...item, quantity: newQuantity };
+      }
+      return item;
+    }));
+  };
+
   const removeFromCart = (id: string) => {
     setCart(prev => prev.filter(item => item.id !== id));
   };
@@ -229,15 +256,30 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    if (query && view !== 'SHOP') {
+      setView('SHOP');
+      setCategoryFilter('All');
+    }
+  };
+
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   // Sorting for Best Sellers
   const bestSellers = [...products].sort((a, b) => b.sales - a.sales).slice(0, 4);
 
   // Filtering Logic
-  const filteredProducts = categoryFilter === 'All' 
-    ? products 
-    : products.filter(p => p.category === categoryFilter);
+  const filteredProducts = products.filter(p => {
+    const matchesCategory = categoryFilter === 'All' || p.category === categoryFilter;
+    const searchLower = searchQuery.toLowerCase();
+    const matchesSearch = !searchQuery || 
+        p.name.toLowerCase().includes(searchLower) || 
+        p.category.toLowerCase().includes(searchLower) ||
+        p.subcategory.toLowerCase().includes(searchLower);
+    
+    return matchesCategory && matchesSearch;
+  });
 
   // Derive subcategories for the current main filter
   const availableSubcategories = categoryFilter === 'All'
@@ -350,18 +392,52 @@ export default function App() {
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-          {filteredProducts.map(product => (
-            <ProductCard 
-              key={product.id} 
-              product={product} 
-              onAddToCart={addToCart} 
-              onClick={handleProductClick}
-            />
-          ))}
+          {filteredProducts.length === 0 ? (
+            <div className="col-span-full py-12 text-center text-stone-500">
+              <p className="text-lg">No products found matching your criteria.</p>
+              <button onClick={() => {setCategoryFilter('All'); setSearchQuery('');}} className="mt-4 text-rumi-600 hover:underline">Clear Filters</button>
+            </div>
+          ) : (
+            filteredProducts.map(product => (
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                onAddToCart={addToCart} 
+                onClick={handleProductClick}
+              />
+            ))
+          )}
         </div>
       )}
     </div>
   );
+
+  const renderAboutModal = () => {
+    if (!activeAboutSection) return null;
+    const data = ABOUT_CONTENT[activeAboutSection];
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setActiveAboutSection(null)}>
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8 relative animate-fade-in-up" onClick={e => e.stopPropagation()}>
+          <button 
+            onClick={() => setActiveAboutSection(null)}
+            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors text-stone-500"
+          >
+            <i className="fa-solid fa-xmark text-lg"></i>
+          </button>
+          <div className="text-center mb-6">
+             <span className="text-rumi-600 font-bold tracking-wider uppercase text-xs">About Us</span>
+             <h2 className="text-3xl font-serif font-bold text-stone-900 mt-2">{data.title}</h2>
+          </div>
+          <div className="prose prose-stone mx-auto text-stone-600 leading-relaxed text-justify">
+             <p>{data.content}</p>
+          </div>
+          <div className="mt-8 text-center">
+               <img src="https://i.ibb.co/v4rT2bzk/roi.jpg" alt="Rumi Signature" className="h-12 mx-auto mix-blend-multiply opacity-50" />
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -370,6 +446,8 @@ export default function App() {
         onCartClick={() => setIsCartOpen(true)}
         currentView={view}
         setView={setView}
+        searchQuery={searchQuery}
+        setSearchQuery={handleSearchChange}
       />
       
       <main className="flex-grow">
@@ -423,9 +501,9 @@ export default function App() {
             <div>
               <h3 className="font-bold mb-4">About</h3>
               <ul className="space-y-2 text-stone-400 text-sm">
-                <li><a href="#" className="hover:text-white">Our Story</a></li>
-                <li><a href="#" className="hover:text-white">Ingredients</a></li>
-                <li><a href="#" className="hover:text-white">Sustainability</a></li>
+                <li><button onClick={() => setActiveAboutSection('story')} className="hover:text-white">Our Story</button></li>
+                <li><button onClick={() => setActiveAboutSection('ingredients')} className="hover:text-white">Ingredients</button></li>
+                <li><button onClick={() => setActiveAboutSection('sustainability')} className="hover:text-white">Sustainability</button></li>
               </ul>
             </div>
             <div>
@@ -449,7 +527,7 @@ export default function App() {
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-stone-800 flex justify-between items-center text-stone-500 text-sm">
-            <p>© 2024 Rumi Makeup. All rights reserved.</p>
+            <p>© 2026 Rumi Makeup. All rights reserved.</p>
             <button onClick={() => setView('ADMIN_LOGIN')} className="hover:text-white transition-colors text-xs uppercase tracking-wider">
                Staff Login
             </button>
@@ -457,11 +535,14 @@ export default function App() {
         </div>
       </footer>
 
+      {renderAboutModal()}
+
       <Cart 
         isOpen={isCartOpen} 
         onClose={() => setIsCartOpen(false)} 
         items={cart}
         onRemove={removeFromCart}
+        onUpdateQuantity={updateCartQuantity}
       />
     </div>
   );

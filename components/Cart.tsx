@@ -6,37 +6,12 @@ interface CartProps {
   onClose: () => void;
   items: CartItem[];
   onRemove: (id: string) => void;
+  onUpdateQuantity?: (id: string, delta: number) => void;
 }
 
-export const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemove }) => {
+export const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemove, onUpdateQuantity }) => {
   const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-  // In a real app, checkout would go to a payment gateway. 
-  // Here we will rely on the parent component's simulated checkout flow, 
-  // but for simplicity, we trigger a specific event or just alert if we kept the old logic.
-  // Wait, I need to pass handleCheckout from App.tsx. 
-  // BUT the prompt didn't ask me to change Cart signature extensively, 
-  // so I will assume the user clicks "Checkout" which just fires an alert in the current code,
-  // but to support the "verified review" requirement, I should probably update App.tsx to pass a checkout handler.
-  // However, I can't easily change the props without updating the interface in App.tsx too.
-  // The XML above for App.tsx passes `onRemove`. I did not add `onCheckout` prop to Cart in `App.tsx` XML.
-  // I will just use a window.confirm here for simplicity or simulate it. 
-  
-  // Correction: To properly implement verified reviews, I need to bubble up the checkout event.
-  // I'll update the Cart component to accept an onCheckout prop in the future, 
-  // but since I missed adding it to the App.tsx Cart usage in the previous step, 
-  // I will stick to a simpler approach: 
-  // I will modify this file to dispatch a custom event or just update the App.tsx file again?
-  // No, I can't update App.tsx twice in one response easily if not careful.
-  
-  // Actually, look at the previous `App.tsx` change. I did NOT pass `onCheckout` to Cart. 
-  // This is a small oversight. 
-  // I will use a clever workaround: The checkout button here will just be visual for now, 
-  // OR I will simply allow "verified" reviews for everyone for demo purposes if I can't wire it up.
-  
-  // BETTER PLAN: I will update `Cart.tsx` to accept `onCheckout` and updating `App.tsx` to pass it is safer.
-  // Since I already provided the `App.tsx` content in the previous block, I'll update it to include the prop passing.
-  
   return (
     <>
       {/* Overlay */}
@@ -82,8 +57,28 @@ export const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemove }) 
                     <h3 className="font-medium text-stone-900">{item.name}</h3>
                     <p className="text-sm text-stone-500">{item.category}</p>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Qty: {item.quantity}</span>
+                  
+                  <div className="flex items-center justify-between mt-2">
+                    {onUpdateQuantity ? (
+                      <div className="flex items-center border border-stone-200 rounded-md">
+                        <button 
+                          onClick={() => onUpdateQuantity(item.id, -1)}
+                          disabled={item.quantity <= 1}
+                          className="px-2 py-1 text-stone-500 hover:text-rumi-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          <i className="fa-solid fa-minus text-xs"></i>
+                        </button>
+                        <span className="text-sm font-medium px-2 min-w-[20px] text-center">{item.quantity}</span>
+                        <button 
+                          onClick={() => onUpdateQuantity(item.id, 1)}
+                          className="px-2 py-1 text-stone-500 hover:text-rumi-600"
+                        >
+                          <i className="fa-solid fa-plus text-xs"></i>
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-sm font-medium">Qty: {item.quantity}</span>
+                    )}
                     <span className="font-semibold">${(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                 </div>
@@ -108,12 +103,6 @@ export const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemove }) 
             <p className="text-xs text-stone-500 mb-6 text-center">Shipping & taxes calculated at checkout</p>
             <button 
                 onClick={() => {
-                    // Quick hack to simulate checkout event since we can't easily change prop signature across 2 files safely in XML without risk of mismatch if user applies one.
-                    // I will dispatch a custom event that App.tsx listens to? No, that's messy.
-                    // Ideally, I should have included onCheckout in App.tsx.
-                    // I'll leave this as a visual button for now that alerts.
-                    // The App.tsx update I provided handles the logic IF I had passed the prop. 
-                    // Let's assume I fix App.tsx to pass the prop.
                     const event = new CustomEvent('checkout-complete');
                     window.dispatchEvent(event);
                 }}
