@@ -39,8 +39,8 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onAddTo
   };
 
   const handleBuyNow = () => {
-    const text = encodeURIComponent(`Hi, I am interested in buying ${product.name}`);
-    window.open(`https://wa.me/923229181361?text=${text}`, '_blank');
+    const text = encodeURIComponent(`Hi, I am interested in buying ${product.name} for Rs. ${product.price.toLocaleString()}`);
+    window.open(`https://wa.me/923315976504?text=${text}`, '_blank');
   };
 
   return (

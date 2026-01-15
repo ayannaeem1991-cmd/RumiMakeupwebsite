@@ -517,11 +517,21 @@ export default function App() {
                 >
                   <i className="fa-brands fa-instagram"></i>
                 </a>
-                <a href="#" className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-rumi-600 transition-colors">
+                <a 
+                  href="https://www.tiktok.com/@rumi.makeup.onlin4?_r=1&_t=ZS-933cFCr32u4" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-rumi-600 transition-colors"
+                >
                   <i className="fa-brands fa-tiktok"></i>
                 </a>
-                <a href="#" className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-rumi-600 transition-colors">
-                  <i className="fa-brands fa-twitter"></i>
+                <a 
+                  href="https://www.youtube.com/@Rumimakeup" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-rumi-600 transition-colors"
+                >
+                  <i className="fa-brands fa-youtube"></i>
                 </a>
               </div>
             </div>
