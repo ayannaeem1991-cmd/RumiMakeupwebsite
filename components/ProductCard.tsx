@@ -46,7 +46,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
         
         <div className="flex items-center justify-between pt-3 border-t border-stone-100 mt-auto">
           <span className="text-base font-semibold text-stone-900">
-            ${product.price.toFixed(2)}
+            Rs. {product.price.toLocaleString()}
           </span>
           <button 
             onClick={handleBuyNow}

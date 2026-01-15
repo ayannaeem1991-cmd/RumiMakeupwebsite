@@ -79,7 +79,7 @@ export const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemove, on
                     ) : (
                       <span className="text-sm font-medium">Qty: {item.quantity}</span>
                     )}
-                    <span className="font-semibold">${(item.price * item.quantity).toFixed(2)}</span>
+                    <span className="font-semibold">Rs. {(item.price * item.quantity).toLocaleString()}</span>
                   </div>
                 </div>
                 <button 
@@ -98,7 +98,7 @@ export const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemove, on
           <div className="p-6 border-t border-stone-100 bg-stone-50">
             <div className="flex items-center justify-between mb-4">
               <span className="text-stone-600">Subtotal</span>
-              <span className="font-serif text-xl font-bold text-stone-900">${total.toFixed(2)}</span>
+              <span className="font-serif text-xl font-bold text-stone-900">Rs. {total.toLocaleString()}</span>
             </div>
             <p className="text-xs text-stone-500 mb-6 text-center">Shipping & taxes calculated at checkout</p>
             <button 

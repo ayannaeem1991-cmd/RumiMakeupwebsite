@@ -6,7 +6,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Velvet Rose Matte Lipstick',
     category: 'Lips',
     subcategory: 'Lipstick',
-    price: 24.99,
+    price: 3950,
     description: 'A long-lasting, hydrating matte lipstick in our signature deep rose shade. Enriched with Vitamin E.',
     image: 'https://picsum.photos/400/400?random=1',
     rating: 4.8,
@@ -22,7 +22,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Luminous Silk Foundation',
     category: 'Face',
     subcategory: 'Foundation',
-    price: 45.00,
+    price: 12500,
     description: 'Buildable coverage that leaves your skin looking naturally radiant and flawless. Oil-free formula.',
     image: 'https://picsum.photos/400/400?random=2',
     rating: 4.7,
@@ -37,7 +37,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Midnight Drama Mascara',
     category: 'Eyes',
     subcategory: 'Mascara',
-    price: 28.50,
+    price: 4500,
     description: 'Volumizing and lengthening mascara for a dramatic false-lash effect without clumps.',
     image: 'https://picsum.photos/400/400?random=3',
     rating: 4.9,
@@ -50,7 +50,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Sunset Glow Blush Palette',
     category: 'Face',
     subcategory: 'Blush',
-    price: 38.00,
+    price: 6800,
     description: 'A trio of peach, coral, and gold tones to warm up your complexion. Silky powder texture.',
     image: 'https://picsum.photos/400/400?random=4',
     rating: 4.6,
@@ -63,7 +63,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Hydra-Boost Setting Spray',
     category: 'Skincare',
     subcategory: 'Moisturizers',
-    price: 22.00,
+    price: 4200,
     description: 'Lock in your look for up to 16 hours while keeping skin hydrated and fresh.',
     image: 'https://picsum.photos/400/400?random=5',
     rating: 4.5,
@@ -76,7 +76,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Precision Liquid Liner',
     category: 'Eyes',
     subcategory: 'Eyeliner',
-    price: 20.00,
+    price: 3200,
     description: 'Ultra-fine tip for precise cat eyes. Intense black pigment that lasts all day.',
     image: 'https://picsum.photos/400/400?random=6',
     rating: 4.8,
@@ -89,7 +89,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Radiance Renewal Serum',
     category: 'Skincare',
     subcategory: 'Serums',
-    price: 55.00,
+    price: 14500,
     description: 'A potent vitamin C serum that brightens and evens skin tone over time.',
     image: 'https://picsum.photos/400/400?random=7',
     rating: 4.9,
@@ -102,7 +102,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Sheer Shine Lip Gloss',
     category: 'Lips',
     subcategory: 'Lip Gloss',
-    price: 18.00,
+    price: 3500,
     description: 'Non-sticky, high-shine gloss with a hint of shimmer. Perfect for layering.',
     image: 'https://picsum.photos/400/400?random=8',
     rating: 4.4,
@@ -115,7 +115,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Full Coverage Concealer',
     category: 'Face',
     subcategory: 'Concealer',
-    price: 26.00,
+    price: 4800,
     description: 'Creamy formula that hides dark circles and blemishes without creasing.',
     image: 'https://picsum.photos/400/400?random=9',
     rating: 4.7,
@@ -128,7 +128,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Golden Hour Eyeshadow',
     category: 'Eyes',
     subcategory: 'Eyeshadow Palettes',
-    price: 42.00,
+    price: 9500,
     description: '12 highly pigmented warm neutral shades in matte and shimmer finishes.',
     image: 'https://picsum.photos/400/400?random=10',
     rating: 4.8,
@@ -141,7 +141,7 @@ export const INITIAL_PRODUCTS: Product[] = [
 export const getSystemInstruction = (products: Product[]) => `You are Rumi, a professional makeup artist and the AI Beauty Advisor for "Rumi Makeup". 
 Your tone is warm, professional, sophisticated, and encouraging.
 You have access to the following product catalog:
-${products.map(p => `- ${p.name} ($${p.price}) [${p.category} - ${p.subcategory}]: ${p.description}`).join('\n')}
+${products.map(p => `- ${p.name} (Rs. ${p.price}) [${p.category} - ${p.subcategory}]: ${p.description}`).join('\n')}
 
 Rules:
 1. Always recommend products from the Rumi Makeup catalog when relevant.

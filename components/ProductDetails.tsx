@@ -67,7 +67,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onAddTo
             </div>
             <h1 className="text-4xl font-serif font-bold text-stone-900 mb-2">{product.name}</h1>
             <div className="flex items-center gap-4">
-              <span className="text-2xl font-medium text-stone-900">${product.price.toFixed(2)}</span>
+              <span className="text-2xl font-medium text-stone-900">Rs. {product.price.toLocaleString()}</span>
               <div className="flex items-center text-amber-400 text-sm">
                 {[...Array(5)].map((_, i) => (
                    <i key={i} className={`fa-solid fa-star ${i < Math.floor(product.rating) ? '' : 'text-stone-300'}`}></i>
@@ -93,7 +93,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onAddTo
               onClick={() => onAddToCart(product)}
               className="flex-1 px-8 py-4 bg-stone-900 text-white rounded-full font-medium hover:bg-stone-800 transition-colors shadow-lg text-lg"
             >
-              Add to Bag - ${product.price.toFixed(2)}
+              Add to Bag - Rs. {product.price.toLocaleString()}
             </button>
              <button 
               onClick={handleBuyNow}

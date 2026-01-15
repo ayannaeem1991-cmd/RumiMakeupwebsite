@@ -19,9 +19,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+  const [showPermissionFix, setShowPermissionFix] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
   
   // Form State
   const [formData, setFormData] = useState<Partial<Product>>({
@@ -91,9 +93,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         .upload(filePath, file);
 
       if (uploadError) {
-        // Provide a specific hint for common policy errors
-        if (uploadError.message.includes('policy') || uploadError.message.includes('permission')) {
-            throw new Error('Permission denied. Please check your Supabase Storage Policies (RLS) to ensure "INSERT" is allowed for the "product-images" bucket.');
+        // Specific check for RLS/Permission errors
+        if (uploadError.message.includes('policy') || uploadError.message.includes('permission') || uploadError.message.includes('new row violates row-level security policy')) {
+            setShowPermissionFix(true);
+            return;
         }
         throw uploadError;
       }
@@ -104,7 +107,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       setFormData(prev => ({ ...prev, image: data.publicUrl }));
     } catch (error: any) {
-      alert('Upload failed: ' + error.message);
+      if (!showPermissionFix) {
+        alert('Upload failed: ' + error.message);
+      }
     } finally {
       setUploading(false);
       // Reset input value to allow selecting the same file again if needed
@@ -144,6 +149,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const newBenefits = [...(formData.benefits || [])];
     newBenefits.splice(index, 1);
     setFormData({ ...formData, benefits: newBenefits });
+  };
+
+  const copySqlToClipboard = () => {
+      const sql = `-- Run this in Supabase SQL Editor to enable uploads
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('product-images', 'product-images', true)
+ON CONFLICT (id) DO NOTHING;
+
+CREATE POLICY "Public Access" 
+ON storage.objects FOR SELECT 
+TO public 
+USING ( bucket_id = 'product-images' );
+
+CREATE POLICY "Allow Uploads" 
+ON storage.objects FOR INSERT 
+TO public 
+WITH CHECK ( bucket_id = 'product-images' );`;
+    
+    navigator.clipboard.writeText(sql).then(() => {
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+    });
   };
 
   const filteredProducts = products.filter(product => 
@@ -236,7 +263,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-stone-900">
-                    ${product.price.toFixed(2)}
+                    Rs. {product.price.toLocaleString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button onClick={() => handleOpenEdit(product)} className="text-rumi-600 hover:text-rumi-900 mr-4 transition-colors">
@@ -255,6 +282,74 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </table>
         </div>
       </div>
+
+      {/* Permission Fix Modal */}
+      {showPermissionFix && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-fade-in-up border border-red-100">
+                <div className="flex items-center gap-3 mb-4 text-red-600">
+                    <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+                         <i className="fa-solid fa-shield-halved text-lg"></i>
+                    </div>
+                    <h2 className="text-xl font-bold text-stone-900">Action Required</h2>
+                </div>
+                
+                <p className="text-stone-600 mb-4 text-sm leading-relaxed">
+                    Your database bucket exists, but the <strong>permissions</strong> are blocking the upload.
+                    <br/><br/>
+                    Supabase requires explicit "Policies" to allow uploads. We cannot do this automatically for security reasons.
+                </p>
+
+                <div className="bg-stone-50 border border-stone-200 rounded-lg p-3 mb-4">
+                    <p className="text-xs font-bold text-stone-700 mb-2 uppercase tracking-wide">Step 1: Copy this code</p>
+                    <div className="relative group">
+                        <pre className="bg-stone-900 text-green-400 p-3 rounded text-[10px] font-mono overflow-x-auto">
+{`-- Enable Public Uploads
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('product-images', 'product-images', true)
+ON CONFLICT (id) DO NOTHING;
+
+CREATE POLICY "Public Access" 
+ON storage.objects FOR SELECT 
+TO public 
+USING ( bucket_id = 'product-images' );
+
+CREATE POLICY "Allow Uploads" 
+ON storage.objects FOR INSERT 
+TO public 
+WITH CHECK ( bucket_id = 'product-images' );`}
+                        </pre>
+                        <button 
+                            onClick={copySqlToClipboard}
+                            className="absolute top-2 right-2 px-2 py-1 bg-white/20 hover:bg-white/30 text-white text-[10px] rounded transition-colors flex items-center gap-1"
+                        >
+                            {copySuccess ? <i className="fa-solid fa-check"></i> : <i className="fa-regular fa-copy"></i>}
+                            {copySuccess ? 'Copied' : 'Copy'}
+                        </button>
+                    </div>
+                </div>
+
+                <div className="mb-6">
+                    <p className="text-xs font-bold text-stone-700 mb-2 uppercase tracking-wide">Step 2: Run in Dashboard</p>
+                    <a
+                        href="https://supabase.com/dashboard/project/ktilwqazrimaqkgqdxjv/sql/new"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block w-full py-2 bg-rumi-600 text-white text-center rounded-lg hover:bg-rumi-700 text-sm font-medium shadow-sm transition-all"
+                    >
+                        Open Supabase SQL Editor <i className="fa-solid fa-arrow-up-right-from-square ml-1"></i>
+                    </a>
+                </div>
+
+                <button
+                    onClick={() => setShowPermissionFix(false)}
+                    className="w-full py-2 text-stone-500 hover:text-stone-700 text-sm"
+                >
+                    Close
+                </button>
+            </div>
+        </div>
+      )}
 
       {isModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
@@ -328,7 +423,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   />
                 </div>
                 <div>
-                   <label className="block text-sm font-medium text-stone-700 mb-1">Price ($)</label>
+                   <label className="block text-sm font-medium text-stone-700 mb-1">Price (PKR)</label>
                    <input
                     type="number"
                     step="0.01"
@@ -425,7 +520,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               className="w-full h-64 p-4 border border-stone-300 rounded-xl font-mono text-xs focus:ring-rumi-500 focus:border-rumi-500 mb-6"
               value={bulkJson}
               onChange={(e) => setBulkJson(e.target.value)}
-              placeholder='[{"name": "...", "price": 10, ...}]'
+              placeholder='[{"name": "...", "price": 1000, ...}]'
             />
             <div className="flex justify-end gap-3">
               <button
