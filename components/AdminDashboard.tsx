@@ -76,7 +76,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     try {
       setUploading(true);
       if (!event.target.files || event.target.files.length === 0) {
-        throw new Error('You must select an image to upload.');
+        return; // User cancelled selection
       }
 
       const file = event.target.files[0];
@@ -89,6 +89,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         .upload(filePath, file);
 
       if (uploadError) {
+        if (uploadError.message.includes('Bucket not found') || uploadError.message.includes('does not exist')) {
+            throw new Error('Storage bucket "product-images" missing. Please create a public bucket named "product-images" in your Supabase dashboard.');
+        } else if (uploadError.message.includes('security policy')) {
+            throw new Error('Permission denied. Please configure RLS policies for "product-images" bucket to allow uploads.');
+        }
         throw uploadError;
       }
 
@@ -101,6 +106,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       alert('Upload failed: ' + error.message);
     } finally {
       setUploading(false);
+      // Reset input value to allow selecting the same file again if needed
+      if (event.target) {
+        event.target.value = '';
+      }
     }
   };
 
@@ -277,10 +286,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 onChange={handleImageUpload}
                                 className="hidden"
                                 id="image-upload"
+                                disabled={uploading}
                             />
                             <label 
                                 htmlFor="image-upload"
-                                className={`inline-flex items-center justify-center px-4 py-2 bg-stone-900 text-white rounded-lg text-sm font-medium transition-colors cursor-pointer ${uploading ? 'opacity-50' : 'hover:bg-stone-800'}`}
+                                className={`inline-flex items-center justify-center px-4 py-2 bg-stone-900 text-white rounded-lg text-sm font-medium transition-colors cursor-pointer ${uploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-stone-800'}`}
                             >
                                 {uploading ? <i className="fa-solid fa-spinner fa-spin mr-2"></i> : <i className="fa-solid fa-upload mr-2"></i>}
                                 {uploading ? 'Uploading...' : 'Upload Image'}
