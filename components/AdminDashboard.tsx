@@ -81,14 +81,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       const file = event.target.files[0];
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      // Use timestamp + random string for robust uniqueness
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+      const filePath = fileName;
 
+      // Upload to the 'product-images' bucket
       const { error: uploadError } = await supabase.storage
         .from('product-images')
         .upload(filePath, file);
 
       if (uploadError) {
+        // Provide a specific hint for common policy errors
+        if (uploadError.message.includes('policy') || uploadError.message.includes('permission')) {
+            throw new Error('Permission denied. Please check your Supabase Storage Policies (RLS) to ensure "INSERT" is allowed for the "product-images" bucket.');
+        }
         throw uploadError;
       }
 
@@ -96,7 +102,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         .from('product-images')
         .getPublicUrl(filePath);
 
-      setFormData({ ...formData, image: data.publicUrl });
+      setFormData(prev => ({ ...prev, image: data.publicUrl }));
     } catch (error: any) {
       alert('Upload failed: ' + error.message);
     } finally {
@@ -413,7 +419,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {isBulkModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl p-8">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-8">
             <h2 className="text-2xl font-serif font-bold mb-4">Bulk Import (JSON)</h2>
             <textarea
               className="w-full h-64 p-4 border border-stone-300 rounded-xl font-mono text-xs focus:ring-rumi-500 focus:border-rumi-500 mb-6"
