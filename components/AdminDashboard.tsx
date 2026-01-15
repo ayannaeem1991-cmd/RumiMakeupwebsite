@@ -19,8 +19,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
-  const [showSetupModal, setShowSetupModal] = useState(false);
-  const [copySuccess, setCopySuccess] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -91,13 +89,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         .upload(filePath, file);
 
       if (uploadError) {
-        // Check for specific bucket errors to trigger the setup helper
-        if (uploadError.message.includes('Bucket not found') || 
-            uploadError.message.includes('does not exist') || 
-            uploadError.message.includes('row-level security')) {
-            setShowSetupModal(true);
-            throw new Error('Storage bucket configuration required.');
-        }
         throw uploadError;
       }
 
@@ -107,9 +98,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       setFormData({ ...formData, image: data.publicUrl });
     } catch (error: any) {
-      if (!showSetupModal) {
-         alert('Upload failed: ' + error.message);
-      }
+      alert('Upload failed: ' + error.message);
     } finally {
       setUploading(false);
       // Reset input value to allow selecting the same file again if needed
@@ -149,30 +138,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const newBenefits = [...(formData.benefits || [])];
     newBenefits.splice(index, 1);
     setFormData({ ...formData, benefits: newBenefits });
-  };
-
-  const copySqlToClipboard = () => {
-      const sql = `-- 1. Create the storage bucket
-INSERT INTO storage.buckets (id, name, public) 
-VALUES ('product-images', 'product-images', true)
-ON CONFLICT (id) DO NOTHING;
-
--- 2. Allow public access to view images
-CREATE POLICY "Public Access" 
-ON storage.objects FOR SELECT 
-TO public 
-USING ( bucket_id = 'product-images' );
-
--- 3. Allow public uploads (required for the Admin Dashboard)
-CREATE POLICY "Allow Uploads" 
-ON storage.objects FOR INSERT 
-TO public 
-WITH CHECK ( bucket_id = 'product-images' );`;
-    
-    navigator.clipboard.writeText(sql).then(() => {
-        setCopySuccess(true);
-        setTimeout(() => setCopySuccess(false), 2000);
-    });
   };
 
   const filteredProducts = products.filter(product => 
@@ -284,73 +249,6 @@ WITH CHECK ( bucket_id = 'product-images' );`;
           </table>
         </div>
       </div>
-
-      {/* Setup Modal */}
-      {showSetupModal && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-8 animate-fade-in-up">
-                <div className="flex items-start justify-between mb-4">
-                     <h2 className="text-2xl font-serif font-bold text-stone-900">System Setup Required</h2>
-                     <button onClick={() => setShowSetupModal(false)} className="text-stone-400 hover:text-stone-600">
-                        <i className="fa-solid fa-xmark text-xl"></i>
-                    </button>
-                </div>
-                
-                <p className="text-stone-600 mb-6">
-                    To enable image uploads, your database needs a storage bucket named <span className="font-mono font-bold text-stone-800">product-images</span>. 
-                    Due to security protocols, this must be created once via your Supabase dashboard.
-                </p>
-                
-                <div className="bg-stone-900 rounded-lg p-5 mb-6 relative group overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-8 bg-stone-800 flex items-center px-4 border-b border-stone-700">
-                         <span className="text-xs text-stone-400 font-mono">SQL Editor</span>
-                    </div>
-                    <code className="text-green-400 font-mono text-xs block whitespace-pre-wrap mt-6">
-{`-- 1. Create the storage bucket
-INSERT INTO storage.buckets (id, name, public) 
-VALUES ('product-images', 'product-images', true)
-ON CONFLICT (id) DO NOTHING;
-
--- 2. Allow public access to view images
-CREATE POLICY "Public Access" 
-ON storage.objects FOR SELECT 
-TO public 
-USING ( bucket_id = 'product-images' );
-
--- 3. Allow public uploads
-CREATE POLICY "Allow Uploads" 
-ON storage.objects FOR INSERT 
-TO public 
-WITH CHECK ( bucket_id = 'product-images' );`}
-                    </code>
-                    <button 
-                        onClick={copySqlToClipboard}
-                        className="absolute top-2 right-2 px-3 py-1 bg-white/10 hover:bg-white/20 text-white text-xs rounded transition-colors flex items-center gap-2"
-                    >
-                        {copySuccess ? <i className="fa-solid fa-check"></i> : <i className="fa-regular fa-copy"></i>}
-                        {copySuccess ? 'Copied!' : 'Copy SQL'}
-                    </button>
-                </div>
-
-                <div className="flex justify-end gap-3">
-                    <button
-                        onClick={() => setShowSetupModal(false)}
-                        className="px-6 py-2 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 font-medium"
-                    >
-                        Close
-                    </button>
-                    <a
-                        href="https://supabase.com/dashboard/project/ktilwqazrimaqkgqdxjv/sql/new"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-6 py-2 bg-rumi-600 text-white rounded-lg hover:bg-rumi-700 font-medium flex items-center shadow-lg transform hover:-translate-y-0.5 transition-all"
-                    >
-                        Open SQL Editor <i className="fa-solid fa-arrow-up-right-from-square ml-2 text-sm"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-      )}
 
       {isModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
