@@ -14,6 +14,7 @@ export interface Product {
   category: 'Lips' | 'Eyes' | 'Face' | 'Skincare';
   subcategory: string;
   price: number;
+  originalPrice?: number;
   description: string;
   image: string;
   rating: number;

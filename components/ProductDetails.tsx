@@ -14,6 +14,10 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onAddTo
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [newReview, setNewReview] = useState({ rating: 5, comment: '', userName: '' });
 
+  const hasDiscount = product.originalPrice && product.originalPrice > product.price;
+  const savings = hasDiscount ? product.originalPrice! - product.price : 0;
+  const savingsPercentage = hasDiscount ? Math.round((savings / product.originalPrice!) * 100) : 0;
+
   const sortedReviews = [...reviews].sort((a, b) => {
     if (sortBy === 'date') return new Date(b.date).getTime() - new Date(a.date).getTime();
     return b.helpfulCount - a.helpfulCount;
@@ -54,7 +58,12 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onAddTo
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20">
         {/* Product Image */}
-        <div className="bg-stone-50 rounded-2xl overflow-hidden aspect-square">
+        <div className="bg-stone-50 rounded-2xl overflow-hidden aspect-square relative">
+          {hasDiscount && (
+            <div className="absolute top-4 left-4 z-10 px-4 py-2 bg-rumi-600 text-white text-xs font-bold rounded-full uppercase tracking-wider shadow-md">
+              Save {savingsPercentage}%
+            </div>
+          )}
           <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
         </div>
 
@@ -67,8 +76,15 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onAddTo
             </div>
             <h1 className="text-4xl font-serif font-bold text-stone-900 mb-2">{product.name}</h1>
             <div className="flex items-center gap-4">
-              <span className="text-2xl font-medium text-stone-900">Rs. {product.price.toLocaleString()}</span>
-              <div className="flex items-center text-amber-400 text-sm">
+              <div className="flex flex-col">
+                {hasDiscount && (
+                  <span className="text-sm text-stone-400 line-through">
+                    Rs. {product.originalPrice?.toLocaleString()}
+                  </span>
+                )}
+                <span className="text-3xl font-bold text-stone-900">Rs. {product.price.toLocaleString()}</span>
+              </div>
+              <div className="flex items-center text-amber-400 text-sm h-full mt-auto pb-1">
                 {[...Array(5)].map((_, i) => (
                    <i key={i} className={`fa-solid fa-star ${i < Math.floor(product.rating) ? '' : 'text-stone-300'}`}></i>
                 ))}

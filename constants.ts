@@ -7,6 +7,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     category: 'Lips',
     subcategory: 'Lipstick',
     price: 3950,
+    originalPrice: 4500,
     description: 'A long-lasting, hydrating matte lipstick in our signature deep rose shade. Enriched with Vitamin E.',
     image: 'https://picsum.photos/400/400?random=1',
     rating: 4.8,
@@ -23,6 +24,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     category: 'Face',
     subcategory: 'Foundation',
     price: 12500,
+    originalPrice: 15000,
     description: 'Buildable coverage that leaves your skin looking naturally radiant and flawless. Oil-free formula.',
     image: 'https://picsum.photos/400/400?random=2',
     rating: 4.7,
@@ -51,6 +53,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     category: 'Face',
     subcategory: 'Blush',
     price: 6800,
+    originalPrice: 8500,
     description: 'A trio of peach, coral, and gold tones to warm up your complexion. Silky powder texture.',
     image: 'https://picsum.photos/400/400?random=4',
     rating: 4.6,
@@ -90,6 +93,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     category: 'Skincare',
     subcategory: 'Serums',
     price: 14500,
+    originalPrice: 18000,
     description: 'A potent vitamin C serum that brightens and evens skin tone over time.',
     image: 'https://picsum.photos/400/400?random=7',
     rating: 4.9,
@@ -129,6 +133,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     category: 'Eyes',
     subcategory: 'Eyeshadow Palettes',
     price: 9500,
+    originalPrice: 12000,
     description: '12 highly pigmented warm neutral shades in matte and shimmer finishes.',
     image: 'https://picsum.photos/400/400?random=10',
     rating: 4.8,
@@ -141,7 +146,7 @@ export const INITIAL_PRODUCTS: Product[] = [
 export const getSystemInstruction = (products: Product[]) => `You are Rumi, a professional makeup artist and the AI Beauty Advisor for "Rumi Makeup". 
 Your tone is warm, professional, sophisticated, and encouraging.
 You have access to the following product catalog:
-${products.map(p => `- ${p.name} (Rs. ${p.price}) [${p.category} - ${p.subcategory}]: ${p.description}`).join('\n')}
+${products.map(p => `- ${p.name} (Rs. ${p.price}${p.originalPrice ? ` - discounted from Rs. ${p.originalPrice}` : ''}) [${p.category} - ${p.subcategory}]: ${p.description}`).join('\n')}
 
 Rules:
 1. Always recommend products from the Rumi Makeup catalog when relevant.

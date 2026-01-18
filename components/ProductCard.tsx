@@ -8,6 +8,8 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onClick }) => {
+  const hasDiscount = product.originalPrice && product.originalPrice > product.price;
+  
   const handleBuyNow = (e: React.MouseEvent) => {
     e.stopPropagation();
     const text = encodeURIComponent(`Hi, I am interested in buying ${product.name} for Rs. ${product.price.toLocaleString()}`);
@@ -15,7 +17,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
   };
 
   return (
-    <div className="group bg-white rounded-xl overflow-hidden border border-stone-100 hover:shadow-xl transition-all duration-300 flex flex-col h-full cursor-pointer" onClick={() => onClick(product)}>
+    <div className="group bg-white rounded-xl overflow-hidden border border-stone-100 hover:shadow-xl transition-all duration-300 flex flex-col h-full cursor-pointer relative" onClick={() => onClick(product)}>
+      {hasDiscount && (
+        <div className="absolute top-2 left-2 z-10 px-2 py-1 bg-rumi-600 text-white text-[10px] font-bold rounded uppercase tracking-wider shadow-sm">
+          Sale
+        </div>
+      )}
+      
       <div className="relative aspect-square overflow-hidden bg-stone-100">
         <img 
           src={product.image} 
@@ -45,9 +53,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
         </p>
         
         <div className="flex items-center justify-between pt-3 border-t border-stone-100 mt-auto">
-          <span className="text-base font-semibold text-stone-900">
-            Rs. {product.price.toLocaleString()}
-          </span>
+          <div className="flex flex-col">
+            {hasDiscount && (
+              <span className="text-[10px] text-stone-400 line-through">
+                Rs. {product.originalPrice?.toLocaleString()}
+              </span>
+            )}
+            <span className="text-base font-semibold text-stone-900">
+              Rs. {product.price.toLocaleString()}
+            </span>
+          </div>
           <button 
             onClick={handleBuyNow}
             className="px-3 py-1.5 bg-green-500 text-white text-xs font-bold uppercase tracking-wider rounded-full hover:bg-green-600 transition-colors flex items-center gap-1 shadow-sm"

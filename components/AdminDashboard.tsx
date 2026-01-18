@@ -31,6 +31,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     category: 'Lips',
     subcategory: '',
     price: 0,
+    originalPrice: undefined,
     description: '',
     image: '',
     benefits: ['']
@@ -44,6 +45,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       category: 'Lips',
       subcategory: '',
       price: 0,
+      originalPrice: undefined,
       description: '',
       image: '',
       benefits: ['']
@@ -254,6 +256,9 @@ WITH CHECK ( bucket_id = 'product-images' );`;
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-semibold text-stone-900">{product.name}</div>
+                        {product.originalPrice && product.originalPrice > product.price && (
+                           <div className="text-[10px] text-rumi-600 font-bold uppercase tracking-tighter">On Sale</div>
+                        )}
                       </div>
                     </div>
                   </td>
@@ -263,7 +268,12 @@ WITH CHECK ( bucket_id = 'product-images' );`;
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-stone-900">
-                    Rs. {product.price.toLocaleString()}
+                    <div className="flex flex-col">
+                      <span className="text-stone-900">Rs. {product.price.toLocaleString()}</span>
+                      {product.originalPrice && (
+                        <span className="text-[10px] text-stone-400 line-through">Rs. {product.originalPrice.toLocaleString()}</span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button onClick={() => handleOpenEdit(product)} className="text-rumi-600 hover:text-rumi-900 mr-4 transition-colors">
@@ -423,17 +433,6 @@ WITH CHECK ( bucket_id = 'product-images' );`}
                   />
                 </div>
                 <div>
-                   <label className="block text-sm font-medium text-stone-700 mb-1">Price (PKR)</label>
-                   <input
-                    type="number"
-                    step="0.01"
-                    required
-                    value={formData.price}
-                    onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value)})}
-                    className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:ring-rumi-500 focus:border-rumi-500"
-                  />
-                </div>
-                <div>
                   <label className="block text-sm font-medium text-stone-700 mb-1">Category</label>
                   <select
                     value={formData.category}
@@ -445,6 +444,28 @@ WITH CHECK ( bucket_id = 'product-images' );`}
                     <option value="Eyes">Eyes</option>
                     <option value="Skincare">Skincare</option>
                   </select>
+                </div>
+                <div>
+                   <label className="block text-sm font-medium text-stone-700 mb-1">Sale Price (After Discount)</label>
+                   <input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={formData.price}
+                    onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value)})}
+                    className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:ring-rumi-500 focus:border-rumi-500"
+                  />
+                </div>
+                <div>
+                   <label className="block text-sm font-medium text-stone-700 mb-1">Original Price (Before Discount - Optional)</label>
+                   <input
+                    type="number"
+                    step="0.01"
+                    placeholder="Leave empty if no discount"
+                    value={formData.originalPrice || ''}
+                    onChange={(e) => setFormData({...formData, originalPrice: e.target.value ? parseFloat(e.target.value) : undefined})}
+                    className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:ring-rumi-500 focus:border-rumi-500"
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-stone-700 mb-1">Subcategory</label>
@@ -520,7 +541,7 @@ WITH CHECK ( bucket_id = 'product-images' );`}
               className="w-full h-64 p-4 border border-stone-300 rounded-xl font-mono text-xs focus:ring-rumi-500 focus:border-rumi-500 mb-6"
               value={bulkJson}
               onChange={(e) => setBulkJson(e.target.value)}
-              placeholder='[{"name": "...", "price": 1000, ...}]'
+              placeholder='[{"name": "...", "price": 1000, "originalPrice": 1200, ...}]'
             />
             <div className="flex justify-end gap-3">
               <button
