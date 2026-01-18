@@ -30,8 +30,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     name: '',
     category: 'Lips',
     subcategory: '',
-    price: 0,
-    originalPrice: undefined,
+    discounted_price: 0,
+    original_price: undefined,
     description: '',
     image: '',
     benefits: ['']
@@ -44,8 +44,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       name: '',
       category: 'Lips',
       subcategory: '',
-      price: 0,
-      originalPrice: undefined,
+      discounted_price: 0,
+      original_price: undefined,
       description: '',
       image: '',
       benefits: ['']
@@ -80,23 +80,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     try {
       setUploading(true);
       if (!event.target.files || event.target.files.length === 0) {
-        return; // User cancelled selection
+        return; 
       }
 
       const file = event.target.files[0];
       const fileExt = file.name.split('.').pop();
-      // Use timestamp + random string for robust uniqueness
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
       const filePath = fileName;
 
-      // Upload to the 'product-images' bucket
       const { error: uploadError } = await supabase.storage
         .from('product-images')
         .upload(filePath, file);
 
       if (uploadError) {
-        // Specific check for RLS/Permission errors
-        if (uploadError.message.includes('policy') || uploadError.message.includes('permission') || uploadError.message.includes('new row violates row-level security policy')) {
+        if (uploadError.message.includes('policy') || uploadError.message.includes('permission')) {
             setShowPermissionFix(true);
             return;
         }
@@ -114,7 +111,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       }
     } finally {
       setUploading(false);
-      // Reset input value to allow selecting the same file again if needed
       if (event.target) {
         event.target.value = '';
       }
@@ -154,7 +150,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   const copySqlToClipboard = () => {
-      const sql = `-- Run this in Supabase SQL Editor to enable uploads
+      const sql = `-- Run this in Supabase SQL Editor to fix columns and permissions
+ALTER TABLE products ADD COLUMN IF NOT EXISTS original_price NUMERIC;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS discounted_price NUMERIC;
+
 INSERT INTO storage.buckets (id, name, public) 
 VALUES ('product-images', 'product-images', true)
 ON CONFLICT (id) DO NOTHING;
@@ -199,6 +198,13 @@ WITH CHECK ( bucket_id = 'product-images' );`;
             className="px-4 py-2 bg-rumi-600 text-white rounded-lg hover:bg-rumi-700 transition-colors flex items-center shadow-md"
           >
             <i className="fa-solid fa-plus mr-2"></i> New Product
+          </button>
+          <button 
+            onClick={() => setShowPermissionFix(true)}
+            className="px-4 py-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-lg hover:bg-amber-100 transition-colors flex items-center"
+            title="Fix Database Errors"
+          >
+            <i className="fa-solid fa-screwdriver-wrench mr-2"></i> Database Setup
           </button>
         </div>
       </div>
@@ -256,7 +262,7 @@ WITH CHECK ( bucket_id = 'product-images' );`;
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-semibold text-stone-900">{product.name}</div>
-                        {product.originalPrice && product.originalPrice > product.price && (
+                        {product.original_price && product.original_price > product.discounted_price && (
                            <div className="text-[10px] text-rumi-600 font-bold uppercase tracking-tighter">On Sale</div>
                         )}
                       </div>
@@ -269,9 +275,9 @@ WITH CHECK ( bucket_id = 'product-images' );`;
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-stone-900">
                     <div className="flex flex-col">
-                      <span className="text-stone-900">Rs. {product.price.toLocaleString()}</span>
-                      {product.originalPrice && (
-                        <span className="text-[10px] text-stone-400 line-through">Rs. {product.originalPrice.toLocaleString()}</span>
+                      <span className="text-stone-900">Rs. {product.discounted_price.toLocaleString()}</span>
+                      {product.original_price && (
+                        <span className="text-[10px] text-stone-400 line-through">Rs. {product.original_price.toLocaleString()}</span>
                       )}
                     </div>
                   </td>
@@ -293,28 +299,29 @@ WITH CHECK ( bucket_id = 'product-images' );`;
         </div>
       </div>
 
-      {/* Permission Fix Modal */}
       {showPermissionFix && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-fade-in-up border border-red-100">
-                <div className="flex items-center gap-3 mb-4 text-red-600">
-                    <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
-                         <i className="fa-solid fa-shield-halved text-lg"></i>
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-fade-in-up border border-blue-100">
+                <div className="flex items-center gap-3 mb-4 text-blue-600">
+                    <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                         <i className="fa-solid fa-database text-lg"></i>
                     </div>
-                    <h2 className="text-xl font-bold text-stone-900">Action Required</h2>
+                    <h2 className="text-xl font-bold text-stone-900">Database Setup Instructions</h2>
                 </div>
                 
                 <p className="text-stone-600 mb-4 text-sm leading-relaxed">
-                    Your database bucket exists, but the <strong>permissions</strong> are blocking the upload.
-                    <br/><br/>
-                    Supabase requires explicit "Policies" to allow uploads. We cannot do this automatically for security reasons.
+                    If you are seeing "Database update failed", it is likely because the columns for <strong>original_price</strong> and <strong>discounted_price</strong> are missing in your Supabase table.
                 </p>
 
                 <div className="bg-stone-50 border border-stone-200 rounded-lg p-3 mb-4">
-                    <p className="text-xs font-bold text-stone-700 mb-2 uppercase tracking-wide">Step 1: Copy this code</p>
+                    <p className="text-xs font-bold text-stone-700 mb-2 uppercase tracking-wide">Step 1: Copy this Migration SQL</p>
                     <div className="relative group">
                         <pre className="bg-stone-900 text-green-400 p-3 rounded text-[10px] font-mono overflow-x-auto">
-{`-- Enable Public Uploads
+{`-- Add Missing Columns
+ALTER TABLE products ADD COLUMN IF NOT EXISTS original_price NUMERIC;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS discounted_price NUMERIC;
+
+-- Enable Public Uploads & Permissions
 INSERT INTO storage.buckets (id, name, public) 
 VALUES ('product-images', 'product-images', true)
 ON CONFLICT (id) DO NOTHING;
@@ -446,24 +453,24 @@ WITH CHECK ( bucket_id = 'product-images' );`}
                   </select>
                 </div>
                 <div>
-                   <label className="block text-sm font-medium text-stone-700 mb-1">Sale Price (After Discount)</label>
+                   <label className="block text-sm font-medium text-stone-700 mb-1">Sale Price (discounted_price)</label>
                    <input
                     type="number"
                     step="0.01"
                     required
-                    value={formData.price}
-                    onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value)})}
+                    value={formData.discounted_price}
+                    onChange={(e) => setFormData({...formData, discounted_price: parseFloat(e.target.value)})}
                     className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:ring-rumi-500 focus:border-rumi-500"
                   />
                 </div>
                 <div>
-                   <label className="block text-sm font-medium text-stone-700 mb-1">Original Price (Before Discount - Optional)</label>
+                   <label className="block text-sm font-medium text-stone-700 mb-1">Before Discount (original_price - Optional)</label>
                    <input
                     type="number"
                     step="0.01"
                     placeholder="Leave empty if no discount"
-                    value={formData.originalPrice || ''}
-                    onChange={(e) => setFormData({...formData, originalPrice: e.target.value ? parseFloat(e.target.value) : undefined})}
+                    value={formData.original_price || ''}
+                    onChange={(e) => setFormData({...formData, original_price: e.target.value ? parseFloat(e.target.value) : undefined})}
                     className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:ring-rumi-500 focus:border-rumi-500"
                   />
                 </div>
@@ -541,7 +548,7 @@ WITH CHECK ( bucket_id = 'product-images' );`}
               className="w-full h-64 p-4 border border-stone-300 rounded-xl font-mono text-xs focus:ring-rumi-500 focus:border-rumi-500 mb-6"
               value={bulkJson}
               onChange={(e) => setBulkJson(e.target.value)}
-              placeholder='[{"name": "...", "price": 1000, "originalPrice": 1200, ...}]'
+              placeholder='[{"name": "...", "discounted_price": 1000, "original_price": 1200, ...}]'
             />
             <div className="flex justify-end gap-3">
               <button

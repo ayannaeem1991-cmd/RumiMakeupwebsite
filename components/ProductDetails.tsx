@@ -14,9 +14,9 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onAddTo
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [newReview, setNewReview] = useState({ rating: 5, comment: '', userName: '' });
 
-  const hasDiscount = product.originalPrice && product.originalPrice > product.price;
-  const savings = hasDiscount ? product.originalPrice! - product.price : 0;
-  const savingsPercentage = hasDiscount ? Math.round((savings / product.originalPrice!) * 100) : 0;
+  const hasDiscount = product.original_price && product.original_price > product.discounted_price;
+  const savings = hasDiscount ? product.original_price! - product.discounted_price : 0;
+  const savingsPercentage = hasDiscount ? Math.round((savings / product.original_price!) * 100) : 0;
 
   const sortedReviews = [...reviews].sort((a, b) => {
     if (sortBy === 'date') return new Date(b.date).getTime() - new Date(a.date).getTime();
@@ -43,7 +43,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onAddTo
   };
 
   const handleBuyNow = () => {
-    const text = encodeURIComponent(`Hi, I am interested in buying ${product.name} for Rs. ${product.price.toLocaleString()}`);
+    const text = encodeURIComponent(`Hi, I am interested in buying ${product.name} for Rs. ${product.discounted_price.toLocaleString()}`);
     window.open(`https://wa.me/923315976504?text=${text}`, '_blank');
   };
 
@@ -79,10 +79,10 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onAddTo
               <div className="flex flex-col">
                 {hasDiscount && (
                   <span className="text-sm text-stone-400 line-through">
-                    Rs. {product.originalPrice?.toLocaleString()}
+                    Rs. {product.original_price?.toLocaleString()}
                   </span>
                 )}
-                <span className="text-3xl font-bold text-stone-900">Rs. {product.price.toLocaleString()}</span>
+                <span className="text-3xl font-bold text-stone-900">Rs. {product.discounted_price.toLocaleString()}</span>
               </div>
               <div className="flex items-center text-amber-400 text-sm h-full mt-auto pb-1">
                 {[...Array(5)].map((_, i) => (
@@ -109,7 +109,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onAddTo
               onClick={() => onAddToCart(product)}
               className="flex-1 px-8 py-4 bg-stone-900 text-white rounded-full font-medium hover:bg-stone-800 transition-colors shadow-lg text-lg"
             >
-              Add to Bag - Rs. {product.price.toLocaleString()}
+              Add to Bag - Rs. {product.discounted_price.toLocaleString()}
             </button>
              <button 
               onClick={handleBuyNow}

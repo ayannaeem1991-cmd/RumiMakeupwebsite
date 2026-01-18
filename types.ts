@@ -13,8 +13,8 @@ export interface Product {
   name: string;
   category: 'Lips' | 'Eyes' | 'Face' | 'Skincare';
   subcategory: string;
-  price: number;
-  originalPrice?: number;
+  discounted_price: number;
+  original_price?: number;
   description: string;
   image: string;
   rating: number;

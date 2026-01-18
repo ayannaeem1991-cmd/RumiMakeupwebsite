@@ -8,11 +8,11 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onClick }) => {
-  const hasDiscount = product.originalPrice && product.originalPrice > product.price;
+  const hasDiscount = product.original_price && product.original_price > product.discounted_price;
   
   const handleBuyNow = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const text = encodeURIComponent(`Hi, I am interested in buying ${product.name} for Rs. ${product.price.toLocaleString()}`);
+    const text = encodeURIComponent(`Hi, I am interested in buying ${product.name} for Rs. ${product.discounted_price.toLocaleString()}`);
     window.open(`https://wa.me/923315976504?text=${text}`, '_blank');
   };
 
@@ -56,11 +56,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
           <div className="flex flex-col">
             {hasDiscount && (
               <span className="text-[10px] text-stone-400 line-through">
-                Rs. {product.originalPrice?.toLocaleString()}
+                Rs. {product.original_price?.toLocaleString()}
               </span>
             )}
             <span className="text-base font-semibold text-stone-900">
-              Rs. {product.price.toLocaleString()}
+              Rs. {product.discounted_price.toLocaleString()}
             </span>
           </div>
           <button 

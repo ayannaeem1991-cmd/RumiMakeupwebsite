@@ -10,7 +10,7 @@ interface CartProps {
 }
 
 export const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemove, onUpdateQuantity }) => {
-  const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const total = items.reduce((sum, item) => sum + (item.discounted_price * item.quantity), 0);
 
   return (
     <>
@@ -79,7 +79,7 @@ export const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemove, on
                     ) : (
                       <span className="text-sm font-medium">Qty: {item.quantity}</span>
                     )}
-                    <span className="font-semibold">Rs. {(item.price * item.quantity).toLocaleString()}</span>
+                    <span className="font-semibold">Rs. {(item.discounted_price * item.quantity).toLocaleString()}</span>
                   </div>
                 </div>
                 <button 
