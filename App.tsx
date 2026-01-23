@@ -43,7 +43,8 @@ export default function App() {
   }, []);
 
   const sanitizeProductData = (p: any): Product => {
-    // Robust field mapping: fallback to 'price' if 'discounted_price' is missing
+    // Mapping both 'price' and 'discounted_price' for backward/forward compatibility
+    const finalPrice = p.discounted_price ?? p.price ?? 0;
     return {
       ...p,
       id: p.id,
@@ -55,7 +56,7 @@ export default function App() {
       sales: p.sales || 0,
       benefits: Array.isArray(p.benefits) ? p.benefits : [],
       reviews: Array.isArray(p.reviews) ? p.reviews : [],
-      discounted_price: p.discounted_price ?? p.price ?? 0,
+      discounted_price: finalPrice,
       original_price: p.original_price ?? undefined,
     };
   };
@@ -63,6 +64,7 @@ export default function App() {
   const fetchProducts = async () => {
     try {
       setIsLoading(true);
+      // Removed the order('created_at') call to fix the schema error
       const { data, error } = await supabase
         .from('products')
         .select('*');
@@ -75,7 +77,7 @@ export default function App() {
         await seedDatabase();
       }
     } catch (error: any) {
-      console.error('Database connection notice:', error.message || error);
+      console.error('Fetch error:', error.message);
       setProducts(INITIAL_PRODUCTS.map(sanitizeProductData));
     } finally {
       setIsLoading(false);
@@ -84,26 +86,28 @@ export default function App() {
 
   const seedDatabase = async () => {
     try {
+      // Only seed if local constant products are not already in DB
       const { data, error } = await supabase
         .from('products')
-        .insert(INITIAL_PRODUCTS)
+        .insert(INITIAL_PRODUCTS.map(p => ({
+          ...p,
+          price: p.discounted_price // Support dual naming in seed
+        })))
         .select();
       
       if (!error && data) {
          setProducts(data.map(sanitizeProductData));
-      } else {
-        setProducts(INITIAL_PRODUCTS.map(sanitizeProductData));
       }
     } catch (e) {
-      setProducts(INITIAL_PRODUCTS.map(sanitizeProductData));
+      console.warn('Seeding skipped or failed.');
     }
   };
 
   const handleAddProduct = async (newProductData: Omit<Product, 'id' | 'sales' | 'reviews'>) => {
-    const tempId = `p${Date.now()}`;
-    const newProduct = {
+    // Prepare payload with both naming conventions to ensure sync success
+    const payload = {
       ...newProductData,
-      id: tempId,
+      price: newProductData.discounted_price, // Fallback for 'price' column
       sales: 0,
       reviews: []
     };
@@ -111,32 +115,44 @@ export default function App() {
     try {
       const { data, error } = await supabase
         .from('products')
-        .insert([newProductData]) // Let DB generate ID if possible, or pass it
+        .insert([payload])
         .select();
 
-      if (error) throw error;
+      if (error) {
+        // Log detailed error for the user to help debug Supabase RLS or Schema issues
+        alert(`Supabase Sync Error: ${error.message}\n\nCheck if your 'products' table has Row Level Security (RLS) enabled or if column names match.`);
+        throw error;
+      }
+      
       if (data) {
         setProducts(prev => [sanitizeProductData(data[0]), ...prev]);
+        alert('Product added successfully to Supabase!');
       }
     } catch (error: any) {
       console.error('Error adding product:', error.message);
-      setProducts(prev => [sanitizeProductData(newProduct), ...prev]);
-      alert('Local update successful. Note: Supabase sync failed.');
     }
   };
 
   const handleUpdateProduct = async (updatedProduct: Product) => {
+    const payload = {
+      ...updatedProduct,
+      price: updatedProduct.discounted_price // Ensure consistency on update
+    };
+
     try {
       const { error } = await supabase
         .from('products')
-        .update(updatedProduct)
+        .update(payload)
         .eq('id', updatedProduct.id);
 
-      if (error) throw error;
-      setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+      if (error) {
+        alert(`Update Error: ${error.message}`);
+        throw error;
+      }
+      setProducts(prev => prev.map(p => p.id === updatedProduct.id ? sanitizeProductData(updatedProduct) : p));
+      alert('Product updated successfully!');
     } catch (error: any) {
       console.error('Error updating product:', error.message);
-      setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
     }
   };
 
@@ -147,24 +163,38 @@ export default function App() {
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        alert(`Delete Error: ${error.message}`);
+        throw error;
+      }
       setProducts(prev => prev.filter(p => p.id !== id));
+      alert('Product deleted from Supabase.');
     } catch (error: any) {
       console.error('Error deleting product:', error.message);
-      setProducts(prev => prev.filter(p => p.id !== id));
     }
   };
 
   const handleBulkAddProducts = async (newProductsData: Omit<Product, 'id' | 'sales' | 'reviews'>[]) => {
+    const payloads = newProductsData.map(p => ({
+      ...p,
+      price: p.discounted_price,
+      sales: 0,
+      reviews: []
+    }));
+
     try {
       const { data, error } = await supabase
         .from('products')
-        .insert(newProductsData)
+        .insert(payloads)
         .select();
 
-      if (error) throw error;
+      if (error) {
+        alert(`Bulk Import Error: ${error.message}`);
+        throw error;
+      }
       if (data) {
         setProducts(prev => [...data.map(sanitizeProductData), ...prev]);
+        alert(`Successfully imported ${data.length} products.`);
       }
     } catch (error: any) {
       console.error('Error bulk adding products:', error.message);
