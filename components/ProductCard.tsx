@@ -38,10 +38,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
           <span className="text-[10px] font-semibold text-rumi-600 uppercase tracking-wide">
             {product.category}
           </span>
-          <div className="flex items-center text-amber-400 text-[10px]">
-            <i className="fa-solid fa-star"></i>
-            <span className="ml-1 text-stone-500">{product.rating}</span>
-          </div>
         </div>
         
         <h3 className="font-serif text-base font-bold text-stone-900 mb-1 group-hover:text-rumi-700 transition-colors">

@@ -10,7 +10,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     original_price: 4500,
     description: 'A long-lasting, hydrating matte lipstick in our signature deep rose shade. Enriched with Vitamin E.',
     image: 'https://picsum.photos/400/400?random=1',
-    rating: 4.8,
     sales: 1500,
     benefits: ['12-hour wear', 'Non-drying', 'Highly pigmented'],
     reviews: [
@@ -27,7 +26,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     original_price: 15000,
     description: 'Buildable coverage that leaves your skin looking naturally radiant and flawless. Oil-free formula.',
     image: 'https://picsum.photos/400/400?random=2',
-    rating: 4.7,
     sales: 2300,
     benefits: ['Medium coverage', 'Radiant finish', 'SPF 15'],
     reviews: [
@@ -42,7 +40,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     discounted_price: 4500,
     description: 'Volumizing and lengthening mascara for a dramatic false-lash effect without clumps.',
     image: 'https://picsum.photos/400/400?random=3',
-    rating: 4.9,
     sales: 3100,
     benefits: ['Water-resistant', 'Smudge-proof', 'Volumizing'],
     reviews: []
@@ -56,7 +53,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     original_price: 8500,
     description: 'A trio of peach, coral, and gold tones to warm up your complexion. Silky powder texture.',
     image: 'https://picsum.photos/400/400?random=4',
-    rating: 4.6,
     sales: 850,
     benefits: ['Buildable', 'Universal shades', 'Long-lasting'],
     reviews: []
@@ -69,7 +65,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     discounted_price: 4200,
     description: 'Lock in your look for up to 16 hours while keeping skin hydrated and fresh.',
     image: 'https://picsum.photos/400/400?random=5',
-    rating: 4.5,
     sales: 1200,
     benefits: ['Dewy finish', 'Alcohol-free', 'Soothing'],
     reviews: []
@@ -82,7 +77,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     discounted_price: 3200,
     description: 'Ultra-fine tip for precise cat eyes. Intense black pigment that lasts all day.',
     image: 'https://picsum.photos/400/400?random=6',
-    rating: 4.8,
     sales: 1800,
     benefits: ['Waterproof', 'Matte black', 'Easy application'],
     reviews: []
@@ -96,7 +90,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     original_price: 18000,
     description: 'A potent vitamin C serum that brightens and evens skin tone over time.',
     image: 'https://picsum.photos/400/400?random=7',
-    rating: 4.9,
     sales: 900,
     benefits: ['Brightening', 'Anti-aging', 'Hydrating'],
     reviews: []
@@ -109,7 +102,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     discounted_price: 3500,
     description: 'Non-sticky, high-shine gloss with a hint of shimmer. Perfect for layering.',
     image: 'https://picsum.photos/400/400?random=8',
-    rating: 4.4,
     sales: 2100,
     benefits: ['High shine', 'Moisturizing', 'Non-sticky'],
     reviews: []
@@ -122,7 +114,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     discounted_price: 4800,
     description: 'Creamy formula that hides dark circles and blemishes without creasing.',
     image: 'https://picsum.photos/400/400?random=9',
-    rating: 4.7,
     sales: 1600,
     benefits: ['Full coverage', 'Crease-proof', 'Long-wear'],
     reviews: []
@@ -136,7 +127,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     original_price: 12000,
     description: '12 highly pigmented warm neutral shades in matte and shimmer finishes.',
     image: 'https://picsum.photos/400/400?random=10',
-    rating: 4.8,
     sales: 2500,
     benefits: ['Blendable', 'High pigment', 'Versatile'],
     reviews: []

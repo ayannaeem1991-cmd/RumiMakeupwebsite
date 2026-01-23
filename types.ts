@@ -17,7 +17,6 @@ export interface Product {
   original_price?: number;
   description: string;
   image: string;
-  rating: number;
   benefits: string[];
   sales: number;
   reviews: Review[];

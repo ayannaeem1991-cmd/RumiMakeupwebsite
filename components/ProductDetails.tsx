@@ -84,11 +84,8 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onAddTo
                 )}
                 <span className="text-3xl font-bold text-stone-900">Rs. {product.discounted_price.toLocaleString()}</span>
               </div>
-              <div className="flex items-center text-amber-400 text-sm h-full mt-auto pb-1">
-                {[...Array(5)].map((_, i) => (
-                   <i key={i} className={`fa-solid fa-star ${i < Math.floor(product.rating) ? '' : 'text-stone-300'}`}></i>
-                ))}
-                <span className="ml-2 text-stone-500">({reviews.length} reviews)</span>
+              <div className="flex items-center h-full mt-auto pb-1">
+                <span className="text-stone-500">({reviews.length} reviews)</span>
               </div>
             </div>
           </div>
