@@ -43,7 +43,6 @@ export default function App() {
   }, []);
 
   const sanitizeProductData = (p: any): Product => {
-    // Mapping both 'price' and 'discounted_price' for backward/forward compatibility
     const finalPrice = p.discounted_price ?? p.price ?? 0;
     return {
       ...p,
@@ -64,7 +63,6 @@ export default function App() {
   const fetchProducts = async () => {
     try {
       setIsLoading(true);
-      // Removed the order('created_at') call to fix the schema error
       const { data, error } = await supabase
         .from('products')
         .select('*');
@@ -86,12 +84,11 @@ export default function App() {
 
   const seedDatabase = async () => {
     try {
-      // Only seed if local constant products are not already in DB
       const { data, error } = await supabase
         .from('products')
         .insert(INITIAL_PRODUCTS.map(p => ({
           ...p,
-          price: p.discounted_price // Support dual naming in seed
+          price: p.discounted_price 
         })))
         .select();
       
@@ -104,10 +101,13 @@ export default function App() {
   };
 
   const handleAddProduct = async (newProductData: Omit<Product, 'id' | 'sales' | 'reviews'>) => {
-    // Prepare payload with both naming conventions to ensure sync success
+    // Generate a unique ID on the frontend to prevent "id violates not-null constraint"
+    const uniqueId = 'prod_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+    
     const payload = {
       ...newProductData,
-      price: newProductData.discounted_price, // Fallback for 'price' column
+      id: uniqueId, // Explicitly provide an ID
+      price: newProductData.discounted_price, 
       sales: 0,
       reviews: []
     };
@@ -119,14 +119,13 @@ export default function App() {
         .select();
 
       if (error) {
-        // Log detailed error for the user to help debug Supabase RLS or Schema issues
-        alert(`Supabase Sync Error: ${error.message}\n\nCheck if your 'products' table has Row Level Security (RLS) enabled or if column names match.`);
+        alert(`Supabase Sync Error: ${error.message}\n\nMake sure the 'id' column in your Supabase table is type 'text' or 'varchar'.`);
         throw error;
       }
       
       if (data) {
         setProducts(prev => [sanitizeProductData(data[0]), ...prev]);
-        alert('Product added successfully to Supabase!');
+        alert('Product added successfully!');
       }
     } catch (error: any) {
       console.error('Error adding product:', error.message);
@@ -136,7 +135,7 @@ export default function App() {
   const handleUpdateProduct = async (updatedProduct: Product) => {
     const payload = {
       ...updatedProduct,
-      price: updatedProduct.discounted_price // Ensure consistency on update
+      price: updatedProduct.discounted_price
     };
 
     try {
@@ -177,6 +176,7 @@ export default function App() {
   const handleBulkAddProducts = async (newProductsData: Omit<Product, 'id' | 'sales' | 'reviews'>[]) => {
     const payloads = newProductsData.map(p => ({
       ...p,
+      id: 'prod_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36), // Generate IDs for each
       price: p.discounted_price,
       sales: 0,
       reviews: []
