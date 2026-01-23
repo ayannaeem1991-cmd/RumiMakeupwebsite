@@ -98,6 +98,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       alert('Upload failed: ' + error.message);
     } finally {
       setUploading(false);
+      if (event.target) {
+        event.target.value = '';
+      }
     }
   };
 
@@ -211,19 +214,82 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <button onClick={() => setIsModalOpen(false)}><i className="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-6">
+              {/* Image Section */}
+              <div className="bg-stone-50 p-4 rounded-xl border border-stone-200">
+                <label className="block text-sm font-bold text-stone-900 mb-2">Product Image</label>
+                <div className="flex flex-col md:flex-row gap-4 items-center">
+                  <div className="w-24 h-24 bg-white rounded-lg border-2 border-dashed border-stone-300 flex items-center justify-center overflow-hidden shrink-0">
+                    {formData.image ? (
+                      <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <i className="fa-regular fa-image text-2xl text-stone-300"></i>
+                    )}
+                  </div>
+                  <div className="flex-1 w-full space-y-2">
+                    <div className="flex gap-2">
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        id="image-upload"
+                        disabled={uploading}
+                      />
+                      <label 
+                        htmlFor="image-upload"
+                        className={`flex-1 inline-flex items-center justify-center px-4 py-2 bg-stone-900 text-white rounded-lg text-sm font-medium transition-colors cursor-pointer ${uploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-stone-800'}`}
+                      >
+                        {uploading ? <i className="fa-solid fa-spinner fa-spin mr-2"></i> : <i className="fa-solid fa-upload mr-2"></i>}
+                        {uploading ? 'Uploading...' : 'Upload Image'}
+                      </label>
+                    </div>
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-stone-200"></div></div>
+                      <div className="relative flex justify-center text-[10px] uppercase font-bold text-stone-400"><span className="px-2 bg-stone-50">OR</span></div>
+                    </div>
+                    <input 
+                      type="url" 
+                      placeholder="Paste Image URL here"
+                      value={formData.image} 
+                      onChange={(e) => setFormData({...formData, image: e.target.value})} 
+                      className="w-full px-4 py-2 text-sm rounded-lg border focus:ring-rumi-500" 
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div><label className="block text-sm font-medium mb-1">Product Name</label><input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2 rounded-lg border focus:ring-rumi-500" /></div>
                 <div><label className="block text-sm font-medium mb-1">Category</label><select value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value as any})} className="w-full px-4 py-2 rounded-lg border"><option value="Lips">Lips</option><option value="Face">Face</option><option value="Eyes">Eyes</option><option value="Skincare">Skincare</option></select></div>
                 <div><label className="block text-sm font-medium mb-1">Sale Price</label><input type="number" step="0.01" required value={formData.discounted_price} onChange={(e) => setFormData({...formData, discounted_price: parseFloat(e.target.value)})} className="w-full px-4 py-2 rounded-lg border" /></div>
                 <div><label className="block text-sm font-medium mb-1">Original Price (Optional)</label><input type="number" step="0.01" value={formData.original_price || ''} onChange={(e) => setFormData({...formData, original_price: e.target.value ? parseFloat(e.target.value) : undefined})} className="w-full px-4 py-2 rounded-lg border" /></div>
               </div>
-              <div><label className="block text-sm font-medium mb-1">Image URL</label><input type="url" value={formData.image} onChange={(e) => setFormData({...formData, image: e.target.value})} className="w-full px-4 py-2 rounded-lg border" /></div>
+              
               <div><label className="block text-sm font-medium mb-1">Description</label><textarea required rows={4} value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="w-full px-4 py-2 rounded-lg border" /></div>
+              
               <div className="flex justify-end gap-3 pt-6 border-t">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2 border rounded-lg">Cancel</button>
-                <button type="submit" className="px-6 py-2 bg-rumi-600 text-white rounded-lg">{editingProduct ? 'Save Changes' : 'Create Product'}</button>
+                <button type="submit" className="px-6 py-2 bg-rumi-600 text-white rounded-lg" disabled={uploading}>{editingProduct ? 'Save Changes' : 'Create Product'}</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {isBulkModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-8">
+            <h2 className="text-2xl font-serif font-bold mb-4">Bulk Import (JSON)</h2>
+            <textarea
+              className="w-full h-64 p-4 border border-stone-300 rounded-xl font-mono text-xs focus:ring-rumi-500 focus:border-rumi-500 mb-6"
+              value={bulkJson}
+              onChange={(e) => setBulkJson(e.target.value)}
+              placeholder='[{"name": "...", "discounted_price": 1000, "original_price": 1200, ...}]'
+            />
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setIsBulkModalOpen(false)} className="px-6 py-2 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 font-medium transition-colors">Cancel</button>
+              <button onClick={handleBulkSave} className="px-6 py-2 bg-stone-900 text-white rounded-lg hover:bg-stone-800 font-medium transition-colors">Import</button>
+            </div>
           </div>
         </div>
       )}
